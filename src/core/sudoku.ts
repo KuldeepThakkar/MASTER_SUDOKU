@@ -1,10 +1,6 @@
 // Pure Sudoku engine: no DOM, no network, no storage. Grid = 81 numbers, 0 = empty.
 export type Grid = number[];
-export type Difficulty = 'easy' | 'medium' | 'hard' | 'expert';
 
-// Phase 1 grades by number of givens only. Phase 2 replaces this with technique-based grading.
-export const TARGET_CLUES: Record<Difficulty, number> = { easy: 40, medium: 34, hard: 29, expert: 25 };
-export const DIFFICULTIES = Object.keys(TARGET_CLUES) as Difficulty[];
 
 const ALL = 0x3fe; // bits 1..9
 export const rowOf = (i: number) => Math.floor(i / 9);
@@ -45,7 +41,7 @@ export function randomSeed(): number {
 
 const popcount = (m: number) => { let n = 0; while (m) { m &= m - 1; n++; } return n; };
 
-function shuffle<T>(arr: T[], rng: () => number): T[] {
+export function shuffle<T>(arr: T[], rng: () => number): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -99,25 +95,6 @@ export function generateSolved(rng: () => number): Grid {
   const solved = search(new Array(81).fill(0), 1, rng).first;
   if (!solved) throw new Error('Generation failed');
   return solved;
-}
-
-export interface Puzzle { puzzle: Grid; solution: Grid; seed: number; difficulty: Difficulty; clues: number }
-
-/** Deterministic: same seed + difficulty always gives the same puzzle. Every puzzle has exactly one solution. */
-export function generatePuzzle(difficulty: Difficulty, seed: number = randomSeed()): Puzzle {
-  if (!(difficulty in TARGET_CLUES)) throw new Error('Unknown difficulty');
-  const rng = mulberry32(seed);
-  const solution = generateSolved(rng);
-  const puzzle = solution.slice();
-  const target = TARGET_CLUES[difficulty];
-  let clues = 81;
-  for (const idx of shuffle(Array.from({ length: 81 }, (_, i) => i), rng)) {
-    if (clues <= target) break;
-    const v = puzzle[idx];
-    puzzle[idx] = 0;
-    if (countSolutions(puzzle, 2) === 1) clues--; else puzzle[idx] = v;
-  }
-  return { puzzle, solution, seed: seed >>> 0, difficulty, clues };
 }
 
 /** Cells that share a digit with a peer (rule violations only; never reveals the solution). */

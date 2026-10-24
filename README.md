@@ -1,6 +1,6 @@
 # Sudoku Cat
 
-Adaptive Sudoku coach (web). Phase 1: playable board + unique-solution puzzle generator.
+Adaptive Sudoku coach (web). Phase 1: playable board technique-graded puzzles (easy: singles; medium: +locked candidates; hard: +pairs; expert: +X-Wing/XY-Wing).
 
     npm install
     npm run dev        # local dev server
